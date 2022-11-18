@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class FallingPlatform : MonoBehaviour
 {
+    [SerializeField] ParticleSystem particleSystem;
     MeshRenderer meshRenderer;
     Collider collider;
 
     PlayerFallsAndRelocates playerFallsAndRelocates;
     Rigidbody playerRigidbody;
+
+    PlayerStatus playerStatus;
     
 
     // Start is called before the first frame update
@@ -19,6 +22,8 @@ public class FallingPlatform : MonoBehaviour
 
         meshRenderer = GetComponent<MeshRenderer>();
         collider = GetComponent<Collider>();
+
+        playerStatus = GameObject.Find("Player").GetComponent<PlayerStatus>();
     }
 
     // Update is called once per frame
@@ -29,6 +34,13 @@ public class FallingPlatform : MonoBehaviour
 
     }
 
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            playerStatus.Fallos++;
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -37,8 +49,7 @@ public class FallingPlatform : MonoBehaviour
             other.gameObject.transform.localPosition = this.transform.localPosition + new Vector3(0, 0.75f, 0); //offset
             other.gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             Debug.Log("Player entered area");
-            PlayerStatus.Intentos++;
-
+            particleSystem.Play();
             StartCoroutine(StartFallingPlatform());
 
         }
@@ -56,7 +67,7 @@ public class FallingPlatform : MonoBehaviour
          yield return new WaitForSeconds(0.2f); //time for platform falling animation and then restarting the platform
         GoBackToThePreviousPlatform();
 
-        yield return new WaitForSeconds(.1f);
+        yield return new WaitForSeconds(.5f);
 
         RestartPlatform();
 

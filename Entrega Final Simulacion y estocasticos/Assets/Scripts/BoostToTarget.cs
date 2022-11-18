@@ -5,6 +5,10 @@ using UnityEngine.UI;
 
 public class BoostToTarget : MonoBehaviour
 {
+    [SerializeField] float fuelConsumptionMultiplier = 15f;
+    [SerializeField] GameObject youLostGameObject;
+
+
     Slider slider;
     
     Rigidbody rigidbody;
@@ -22,27 +26,70 @@ public class BoostToTarget : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (Fuel <= 1)
         {
-            impulse += Time.deltaTime * boostMultiplier;
-            ConsumeFuel();
+            StartCoroutine(YouLostTimed());
+            youLostGameObject.SetActive(true);
+
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            BoostCat();
-            StartCoroutine(ResetVariables());
+            RestartLevel.RestartMyLevel();
         }
+
+        if (PlayerStatus.PlayerCurrentlyInPlatform)
+        {
+            if (Fuel > 0)
+            {
+                if (Input.GetMouseButton(0))
+                {
+                    impulse += Time.deltaTime * boostMultiplier;
+                    ConsumeFuel();
+
+                }
+            }
+          
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                BoostCat();
+                StartCoroutine(ResetVariables());
+
+                PlayerStatus.PlayerCurrentlyInPlatform = false;
+            }
+        }
+
+        if (PlayerStatus.PlayerCurrentlyInPlatform)
+        {
+            FovChanger.ShouldEngageFovChange = false;
+        }
+        else
+        {
+            FovChanger.ShouldEngageFovChange = true;
+        }
+
+    }
+
+    void YouLostLogic()
+    {
+
+    }
+
+    IEnumerator YouLostTimed()
+    {
+        yield return new WaitForSeconds(5f);
+        RestartLevel.RestartMyLevel();
     }
 
     void BoostCat()
     {
         rigidbody.AddForce(this.transform.forward* impulse, ForceMode.Impulse);
+        FovChanger.ShouldEngageFovChange = true;
     }
 
     void ConsumeFuel()
     {
-        float fuelConsumptionMultiplier = 15f;
 
         if (Fuel>0)
         {
